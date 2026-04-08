@@ -178,3 +178,99 @@ exports.getOrdersCount = async (req, res) => {
     });
   }
 };
+
+// Update order status
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Validate status
+    const validStatuses = ['pending', 'accepted', 'preparing', 'ready', 'completed'];
+    if (!validStatuses.includes(status.toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status. Allowed: ${validStatuses.join(', ')}`
+      });
+    }
+
+    const connection = await pool.getConnection();
+    
+    // Check if order exists
+    const [orders] = await connection.query('SELECT id FROM orders WHERE id = ?', [id]);
+    if (orders.length === 0) {
+      connection.release();
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Update status
+    await connection.query(
+      'UPDATE orders SET status = ? WHERE id = ?',
+      [status.toLowerCase(), id]
+    );
+    
+    connection.release();
+
+    res.status(200).json({
+      success: true,
+      message: 'Order status updated successfully',
+      orderId: id,
+      newStatus: status.toLowerCase()
+    });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating order status',
+      error: error.message
+    });
+  }
+};
+
+// Get orders stats (for dashboard)
+exports.getOrdersStats = async (req, res) => {
+  try {
+    const connection = await pool.getConnection();
+    
+    // Total orders
+    const [totalResult] = await connection.query('SELECT COUNT(*) as count FROM orders');
+    
+    // Orders by status
+    const [statusResult] = await connection.query(
+      `SELECT status, COUNT(*) as count FROM orders GROUP BY status`
+    );
+    
+    // Total revenue
+    const [revenueResult] = await connection.query(
+      'SELECT SUM(total_amount) as totalRevenue FROM orders'
+    );
+
+    connection.release();
+
+    const stats = {
+      totalOrders: totalResult[0].count,
+      totalRevenue: revenueResult[0].totalRevenue || 0,
+      byStatus: {}
+    };
+
+    // Format status counts
+    statusResult.forEach(row => {
+      stats.byStatus[row.status] = row.count;
+    });
+
+    res.status(200).json({
+      success: true,
+      data: stats
+    });
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching stats',
+      error: error.message
+    });
+  }
+};

@@ -21,6 +21,35 @@
   font-size: 28px;
   font-weight: bold;
   letter-spacing: 1px;
+  margin: 0;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-access-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.admin-access-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.admin-access-btn:active {
+  transform: scale(0.98);
 }
 
 .navbar-cart {
@@ -50,6 +79,15 @@
     font-size: 20px;
   }
 
+  .navbar-right {
+    gap: 10px;
+  }
+
+  .admin-access-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
   .navbar-cart {
     font-size: 14px;
     padding: 6px 12px;
@@ -59,5 +97,6 @@
     width: 25px;
     height: 25px;
     line-height: 25px;
+    font-size: 12px;
   }
 }

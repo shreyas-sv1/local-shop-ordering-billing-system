@@ -82,3 +82,87 @@ exports.addProduct = async (req, res) => {
     });
   }
 };
+
+// Update product
+exports.updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, price } = req.body;
+
+    if (!name || !price) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name and price are required'
+      });
+    }
+
+    const connection = await pool.getConnection();
+    
+    // Check if product exists
+    const [products] = await connection.query('SELECT id FROM products WHERE id = ?', [id]);
+    if (products.length === 0) {
+      connection.release();
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Update product
+    await connection.query(
+      'UPDATE products SET name = ?, price = ? WHERE id = ?',
+      [name, price, id]
+    );
+
+    connection.release();
+
+    res.status(200).json({
+      success: true,
+      message: 'Product updated successfully',
+      productId: id
+    });
+  } catch (error) {
+    console.error('Error updating product:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating product',
+      error: error.message
+    });
+  }
+};
+
+// Delete product
+exports.deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+    
+    // Check if product exists
+    const [products] = await connection.query('SELECT id FROM products WHERE id = ?', [id]);
+    if (products.length === 0) {
+      connection.release();
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Delete product
+    await connection.query('DELETE FROM products WHERE id = ?', [id]);
+
+    connection.release();
+
+    res.status(200).json({
+      success: true,
+      message: 'Product deleted successfully',
+      productId: id
+    });
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting product',
+      error: error.message
+    });
+  }
+};
