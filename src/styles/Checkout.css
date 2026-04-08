@@ -1,0 +1,153 @@
+.checkout-container {
+  max-width: 600px;
+  margin: 40px auto;
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-container h1 {
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 32px;
+}
+
+.no-order {
+  text-align: center;
+  padding: 40px 0;
+  color: #999;
+  font-size: 18px;
+}
+
+.checkout-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.order-summary {
+  border-top: 2px solid #667eea;
+  border-bottom: 2px solid #667eea;
+  padding: 20px 0;
+}
+
+.order-summary h2 {
+  color: #333;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.order-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 15px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  align-items: center;
+}
+
+.order-item span:first-child {
+  font-weight: 600;
+  color: #333;
+}
+
+.order-item span {
+  color: #666;
+  text-align: right;
+}
+
+.order-item span:first-child {
+  text-align: left;
+}
+
+.order-total {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.order-total h3 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.order-total p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.place-order-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.place-order-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.place-order-btn:active {
+  transform: scale(0.98);
+}
+
+.confirmation-message {
+  background: #d4edda;
+  color: #155724;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  border-left: 4px solid #28a745;
+}
+
+@media (max-width: 768px) {
+  .checkout-container {
+    margin: 20px;
+    padding: 20px;
+  }
+
+  .checkout-container h1 {
+    font-size: 24px;
+  }
+
+  .order-item {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .order-item span:first-child {
+    text-align: left;
+  }
+
+  .order-item span {
+    text-align: left;
+  }
+
+  .order-total h3 {
+    font-size: 24px;
+  }
+
+  .place-order-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+}
