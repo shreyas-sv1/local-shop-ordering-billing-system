@@ -16,6 +16,27 @@
   text-align: center;
 }
 
+.loading {
+  text-align: center;
+  padding: 40px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  color: #1976d2;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.error-message {
+  text-align: center;
+  padding: 20px;
+  background: #ffebee;
+  border-radius: 8px;
+  color: #c62828;
+  font-size: 14px;
+  border-left: 4px solid #c62828;
+  margin-bottom: 20px;
+}
+
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
