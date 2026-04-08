@@ -250,6 +250,81 @@
   font-weight: 600;
 }
 
+.order-billed {
+  text-align: center;
+  font-weight: 500;
+}
+
+.badge-billed {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.badge-pending-bill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.billed-section {
+  background: #d1e7dd;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #0f5132;
+}
+
+.billed-section h4 {
+  color: #0f5132;
+  margin: 0 0 8px 0;
+}
+
+.final-amount {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f5132;
+  margin: 0;
+}
+
+.action-group {
+  display: flex;
+  gap: 10px;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.btn-generate-bill {
+  flex: 1;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-generate-bill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.3);
+}
+
+.btn-generate-bill:active {
+  transform: scale(0.98);
+}
+}
+
 @media (max-width: 1200px) {
   .orders-layout {
     grid-template-columns: 1fr;

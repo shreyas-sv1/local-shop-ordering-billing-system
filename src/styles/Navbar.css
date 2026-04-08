@@ -30,6 +30,28 @@
   gap: 20px;
 }
 
+.orders-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.orders-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.orders-btn:active {
+  transform: scale(0.98);
+}
+
 .admin-access-btn {
   background: rgba(255, 255, 255, 0.2);
   color: white;

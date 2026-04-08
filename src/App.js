@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
+import OrderHistory from './pages/OrderHistory';
 import AdminPanel from './admin/AdminPanel';
 import './styles/App.css';
 
 function App() {
   const [cartCount, setCartCount] = useState(0);
   const [isAdminMode, setIsAdminMode] = useState(false);
+  const [currentPage, setCurrentPage] = useState('home'); // 'home' or 'orders'
 
   const handleAdminAccess = () => {
     setIsAdminMode(!isAdminMode);
+  };
+
+  const handleViewOrders = () => {
+    setCurrentPage('orders');
+  };
+
+  const handleBackToHome = () => {
+    setCurrentPage('home');
   };
 
   if (isAdminMode) {
@@ -18,9 +28,17 @@ function App() {
 
   return (
     <div className="App">
-      <Navbar cartCount={cartCount} onAdminClick={handleAdminAccess} />
+      <Navbar 
+        cartCount={cartCount} 
+        onAdminClick={handleAdminAccess}
+        onOrdersClick={handleViewOrders}
+      />
       <main className="main-content">
-        <Home />
+        {currentPage === 'home' ? (
+          <Home />
+        ) : (
+          <OrderHistory />
+        )}
       </main>
     </div>
   );

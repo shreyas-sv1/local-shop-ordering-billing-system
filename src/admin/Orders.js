@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import BillGenerator from './BillGenerator';
 import '../admin/styles/Orders.css';
 
 function Orders() {
@@ -7,6 +8,7 @@ function Orders() {
   const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
+  const [showBillGenerator, setShowBillGenerator] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -69,6 +71,16 @@ function Orders() {
     }
   };
 
+  const handleBillGenerated = () => {
+    setShowBillGenerator(false);
+    // Refresh orders to get updated bill_generated status
+    fetchOrders();
+    // Refresh selected order details
+    if (selectedOrder) {
+      fetchOrderDetails(selectedOrder.id);
+    }
+  };
+
   if (loading) return <div className="loading">Loading orders...</div>;
   if (error) return <div className="error">{error}</div>;
 
@@ -90,6 +102,7 @@ function Orders() {
                     <th>Order ID</th>
                     <th>Amount</th>
                     <th>Status</th>
+                    <th>Billed</th>
                     <th>Date</th>
                     <th>Action</th>
                   </tr>
@@ -103,6 +116,13 @@ function Orders() {
                         <span className={`status-badge ${order.status}`}>
                           {order.status}
                         </span>
+                      </td>
+                      <td className="order-billed">
+                        {order.bill_generated ? (
+                          <span className="badge-billed">✓ Yes</span>
+                        ) : (
+                          <span className="badge-pending-bill">✕ No</span>
+                        )}
                       </td>
                       <td className="order-date">
                         {new Date(order.created_at).toLocaleDateString()}
@@ -154,6 +174,13 @@ function Orders() {
                 <p className="total-amount">₹{selectedOrder.total_amount}</p>
               </div>
 
+              {selectedOrder.bill_generated && selectedOrder.final_amount && (
+                <div className="detail-group billed-section">
+                  <h4>✓ Bill Generated</h4>
+                  <p className="final-amount">Final Bill: ₹{selectedOrder.final_amount}</p>
+                </div>
+              )}
+
               <div className="detail-group">
                 <h4>Order Status</h4>
                 <div className="status-update">
@@ -179,10 +206,29 @@ function Orders() {
                 <h4>Order Date</h4>
                 <p>{new Date(selectedOrder.created_at).toLocaleString()}</p>
               </div>
+
+              {!selectedOrder.bill_generated && (
+                <div className="detail-group action-group">
+                  <button 
+                    className="btn-generate-bill"
+                    onClick={() => setShowBillGenerator(true)}
+                  >
+                    📄 Generate Bill
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
       </div>
+
+      {showBillGenerator && selectedOrder && (
+        <BillGenerator 
+          orderId={selectedOrder.id}
+          onBillGenerated={handleBillGenerated}
+          onCancel={() => setShowBillGenerator(false)}
+        />
+      )}
     </div>
   );
 }

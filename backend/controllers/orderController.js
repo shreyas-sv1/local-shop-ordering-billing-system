@@ -274,3 +274,207 @@ exports.getOrdersStats = async (req, res) => {
     });
   }
 };
+
+// Generate final bill for an order
+exports.generateBill = async (req, res) => {
+  const connection = await pool.getConnection();
+  
+  try {
+    const { id } = req.params;
+    const { items } = req.body;
+
+    if (!items || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Bill must contain at least one item'
+      });
+    }
+
+    // Check if order exists
+    const [orders] = await connection.query('SELECT id FROM orders WHERE id = ?', [id]);
+    if (orders.length === 0) {
+      connection.release();
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Check if bill already exists
+    const [existingBills] = await connection.query('SELECT id FROM bills WHERE order_id = ?', [id]);
+    if (existingBills.length > 0) {
+      connection.release();
+      return res.status(400).json({
+        success: false,
+        message: 'Bill already generated for this order'
+      });
+    }
+
+    // Start transaction
+    await connection.beginTransaction();
+
+    // Calculate final amount from provided items
+    let finalAmount = 0;
+    for (const item of items) {
+      finalAmount += item.quantity * item.price;
+    }
+
+    // Update order_items with final prices and quantities
+    // First, delete existing order items
+    await connection.query('DELETE FROM order_items WHERE order_id = ?', [id]);
+
+    // Insert updated order items
+    for (const item of items) {
+      await connection.query(
+        'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
+        [id, item.product_id, item.quantity, item.price]
+      );
+    }
+
+    // Insert bill record
+    const [billResult] = await connection.query(
+      'INSERT INTO bills (order_id, final_amount) VALUES (?, ?)',
+      [id, finalAmount]
+    );
+
+    // Update order with final amount and bill_generated flag
+    await connection.query(
+      'UPDATE orders SET final_amount = ?, bill_generated = TRUE, status = ? WHERE id = ?',
+      [finalAmount, 'ready', id]
+    );
+
+    await connection.commit();
+
+    res.status(201).json({
+      success: true,
+      message: 'Bill generated successfully',
+      orderId: id,
+      billId: billResult.insertId,
+      finalAmount: finalAmount
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error generating bill:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error generating bill',
+      error: error.message
+    });
+  } finally {
+    connection.release();
+  }
+};
+
+// Get bill details for customer view
+exports.getBillDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+
+    // Get bill info
+    const [bills] = await connection.query(
+      'SELECT b.id, b.order_id, b.final_amount, b.created_at FROM bills WHERE order_id = ?',
+      [id]
+    );
+
+    if (bills.length === 0) {
+      connection.release();
+      return res.status(404).json({
+        success: false,
+        message: 'Bill not found for this order'
+      });
+    }
+
+    // Get bill items
+    const [items] = await connection.query(
+      `SELECT oi.product_id, p.name, oi.quantity, oi.price, (oi.quantity * oi.price) as subtotal
+       FROM order_items oi 
+       JOIN products p ON oi.product_id = p.id 
+       WHERE oi.order_id = ?`,
+      [id]
+    );
+
+    connection.release();
+
+    res.status(200).json({
+      success: true,
+      data: {
+        billId: bills[0].id,
+        orderId: bills[0].order_id,
+        items: items,
+        finalAmount: bills[0].final_amount,
+        createdAt: bills[0].created_at
+      },
+      message: 'Bill details fetched successfully'
+    });
+  } catch (error) {
+    console.error('Error fetching bill details:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching bill details',
+      error: error.message
+    });
+  }
+};
+
+// Get bill generation preview (for admin before generating)
+exports.getBillPreview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const connection = await pool.getConnection();
+
+    // Get order
+    const [orders] = await connection.query('SELECT id, total_amount, bill_generated FROM orders WHERE id = ?', [id]);
+    
+    if (orders.length === 0) {
+      connection.release();
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    if (orders[0].bill_generated) {
+      connection.release();
+      return res.status(400).json({
+        success: false,
+        message: 'Bill already generated for this order'
+      });
+    }
+
+    // Get order items for bill preview
+    const [items] = await connection.query(
+      `SELECT oi.id, oi.product_id, p.name, oi.quantity, oi.price, (oi.quantity * oi.price) as subtotal
+       FROM order_items oi 
+       JOIN products p ON oi.product_id = p.id 
+       WHERE oi.order_id = ?`,
+      [id]
+    );
+
+    connection.release();
+
+    // Calculate total
+    let totalAmount = 0;
+    items.forEach(item => {
+      totalAmount += item.subtotal;
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        orderId: id,
+        items: items,
+        calculatedTotal: totalAmount,
+        originalTotal: orders[0].total_amount
+      },
+      message: 'Bill preview fetched successfully'
+    });
+  } catch (error) {
+    console.error('Error fetching bill preview:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching bill preview',
+      error: error.message
+    });
+  }
+};
