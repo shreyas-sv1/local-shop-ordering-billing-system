@@ -9,6 +9,7 @@ const PORT = process.env.PORT || 5000;
 // Import routes
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 // Middleware
 app.use(cors({
@@ -36,6 +37,7 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/auth', authRoutes);
 
 // 404 handler
 app.use((req, res) => {

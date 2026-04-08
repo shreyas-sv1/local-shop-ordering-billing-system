@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import html2pdf from 'html2pdf.js';
 import './styles/CustomerBill.css';
 
 function CustomerBill({ orderId, onClose }) {
   const [bill, setBill] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const billRef = useRef(null);
 
   useEffect(() => {
     fetchBill();
@@ -57,6 +59,21 @@ function CustomerBill({ orderId, onClose }) {
     window.print();
   };
 
+  const downloadPDF = () => {
+    if (!billRef.current) return;
+
+    const element = billRef.current;
+    const opt = {
+      margin: 10,
+      filename: `bill-order-${bill.orderId}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+  };
+
   return (
     <div className="customer-bill-modal">
       <div className="bill-content">
@@ -65,7 +82,7 @@ function CustomerBill({ orderId, onClose }) {
           <button className="close-btn-modal" onClick={onClose}>✕</button>
         </div>
 
-        <div className="bill-container">
+        <div className="bill-container" ref={billRef}>
           {/* Header Section */}
           <div className="receipt-header">
             <h2 className="shop-name">🛒 Local Shop</h2>
@@ -127,6 +144,9 @@ function CustomerBill({ orderId, onClose }) {
 
           {/* Action Buttons */}
           <div className="bill-actions print-hide">
+            <button className="btn-download-pdf" onClick={downloadPDF}>
+              📥 Download PDF
+            </button>
             <button className="btn-print" onClick={printBill}>
               🖨️ Print Bill
             </button>

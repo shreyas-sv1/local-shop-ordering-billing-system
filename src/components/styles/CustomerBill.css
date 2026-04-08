@@ -270,7 +270,8 @@
 }
 
 .btn-print,
-.btn-close {
+.btn-close,
+.btn-download-pdf {
   padding: 10px 24px;
   border: none;
   border-radius: 8px;
@@ -288,6 +289,16 @@
 .btn-print:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+}
+
+.btn-download-pdf {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+}
+
+.btn-download-pdf:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(40, 167, 69, 0.3);
 }
 
 .btn-close {
