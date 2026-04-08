@@ -164,3 +164,7 @@
     font-size: 14px;
   }
 }
+
+.cart-empty-state {
+  padding: 20px;
+}

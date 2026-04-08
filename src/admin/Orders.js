@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import BillGenerator from './BillGenerator';
+import Loader from '../components/Loader';
+import { useToast } from '../context/ToastContext';
 import '../admin/styles/Orders.css';
 
 function Orders() {
@@ -9,6 +11,7 @@ function Orders() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
   const [showBillGenerator, setShowBillGenerator] = useState(false);
+  const { success, error: showError } = useToast();
 
   useEffect(() => {
     fetchOrders();
@@ -46,13 +49,13 @@ function Orders() {
         setOrders(orders.map(o => 
           o.id === orderId ? { ...o, status: newStatus } : o
         ));
-        alert(`Order ${orderId} status updated to ${newStatus}`);
+        success(`Order ${orderId} status updated to ${newStatus}`);
       } else {
-        alert('Error updating status: ' + data.message);
+        showError('Error updating status: ' + data.message);
       }
     } catch (err) {
       console.error('Error updating order:', err);
-      alert('Failed to update order status');
+      showError('Failed to update order status');
     } finally {
       setUpdatingOrderId(null);
     }
@@ -81,7 +84,7 @@ function Orders() {
     }
   };
 
-  if (loading) return <div className="loading">Loading orders...</div>;
+  if (loading) return <Loader size="large" message="Loading orders..." />;
   if (error) return <div className="error">{error}</div>;
 
   return (

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CustomerBill from '../components/CustomerBill';
+import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
 import '../styles/OrderHistory.css';
 
 function OrderHistory() {
@@ -65,7 +67,7 @@ function OrderHistory() {
     return (
       <div className="order-history-container">
         <h2>📋 My Orders</h2>
-        <div className="loading-message">Loading your orders...</div>
+        <Loader size="large" message="Loading your orders..." />
       </div>
     );
   }
@@ -85,11 +87,13 @@ function OrderHistory() {
       )}
 
       {orders.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">📭</div>
-          <h3>No Orders Yet</h3>
-          <p>You haven't placed any orders yet. Start shopping now!</p>
-        </div>
+        <EmptyState 
+          icon="📭"
+          title="No Orders Yet"
+          message="You haven't placed any orders yet. Start shopping now!"
+          actionText="Continue Shopping"
+          onAction={() => window.location.href = '/'}
+        />
       ) : (
         <div className="orders-grid-customer">
           {orders.map(order => (

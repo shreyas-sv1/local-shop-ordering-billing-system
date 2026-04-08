@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import OrderHistory from './pages/OrderHistory';
 import AdminPanel from './admin/AdminPanel';
+import { ToastProvider } from './context/ToastContext';
 import './styles/App.css';
 
 function App() {
@@ -27,20 +28,22 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <Navbar 
-        cartCount={cartCount} 
-        onAdminClick={handleAdminAccess}
-        onOrdersClick={handleViewOrders}
-      />
-      <main className="main-content">
-        {currentPage === 'home' ? (
-          <Home />
-        ) : (
-          <OrderHistory />
-        )}
-      </main>
-    </div>
+    <ToastProvider>
+      <div className="App">
+        <Navbar 
+          cartCount={cartCount} 
+          onAdminClick={handleAdminAccess}
+          onOrdersClick={handleViewOrders}
+        />
+        <main className="main-content">
+          {currentPage === 'home' ? (
+            <Home />
+          ) : (
+            <OrderHistory />
+          )}
+        </main>
+      </div>
+    </ToastProvider>
   );
 }
 

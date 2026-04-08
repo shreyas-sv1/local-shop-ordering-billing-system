@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from '../components/ProductCard';
 import Cart from '../components/Cart';
+import ProductSearch from '../components/ProductSearch';
+import Loader from '../components/Loader';
+import EmptyState from '../components/EmptyState';
+import { useToast } from '../context/ToastContext';
 import '../styles/Home.css';
 
 function Home() {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { success, error: showError } = useToast();
 
   // Fetch products from backend
   useEffect(() => {
@@ -19,15 +25,18 @@ function Home() {
       .then(data => {
         if (data.success) {
           setProducts(data.data);
+          setFilteredProducts(data.data);
           setLoading(false);
         }
       })
       .catch(err => {
         console.error('Error fetching products:', err);
-        setError('Failed to load products. Make sure backend is running on http://localhost:5000');
+        const errorMsg = 'Failed to load products. Make sure backend is running on http://localhost:5000';
+        setError(errorMsg);
+        showError(errorMsg);
         setLoading(false);
       });
-  }, []);
+  }, [showError]);
 
   const handleAddToCart = (product) => {
     const existingItem = cartItems.find(item => item.id === product.id);
@@ -61,7 +70,7 @@ function Home() {
 
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
-      alert('Please add items to cart before proceeding');
+      showError('Please add items to cart before proceeding');
       return;
     }
 
@@ -100,17 +109,17 @@ function Home() {
         // Log to console
         console.log('Order Placed:', orderDataLocal);
 
-        // Show confirmation
-        alert(`Order Placed Successfully!\nOrder ID: ${result.orderId}\nTotal: ₹${result.totalAmount}`);
+        // Show success notification
+        success(`Order Placed Successfully! Order ID: ${result.orderId}`);
 
         // Clear cart
         setCartItems([]);
       } else {
-        alert('Error placing order: ' + result.message);
+        showError('Error placing order: ' + result.message);
       }
     } catch (error) {
       console.error('Error creating order:', error);
-      alert('Failed to place order. Make sure backend is running!');
+      showError('Failed to place order. Make sure backend is running!');
     }
   };
 
@@ -121,24 +130,35 @@ function Home() {
       <div className="products-section">
         <h2>Our Products</h2>
         
-        {loading && (
-          <div className="loading">Loading products from backend...</div>
-        )}
-
-        {error && (
+        {loading ? (
+          <Loader size="large" message="Loading products from backend..." />
+        ) : error ? (
           <div className="error-message">{error}</div>
-        )}
-
-        {!loading && !error && (
-          <div className="products-grid">
-            {products.map(product => (
-              <ProductCard 
-                key={product.id} 
-                product={product}
-                onAddToCart={handleAddToCart}
+        ) : (
+          <>
+            <ProductSearch 
+              products={products}
+              onFilteredProducts={setFilteredProducts}
+            />
+            
+            {filteredProducts.length > 0 ? (
+              <div className="products-grid">
+                {filteredProducts.map(product => (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product}
+                    onAddToCart={handleAddToCart}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState 
+                icon="🔍"
+                title="No Products Found"
+                message="Try adjusting your search or filters"
               />
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import EmptyState from './EmptyState';
 import '../styles/Cart.css';
 
 function Cart({ cartItems, onRemoveItem, onUpdateQuantity, onCheckout }) {
@@ -9,7 +10,13 @@ function Cart({ cartItems, onRemoveItem, onUpdateQuantity, onCheckout }) {
       <h2>Shopping Cart</h2>
       
       {cartItems.length === 0 ? (
-        <p className="empty-cart">Your cart is empty</p>
+        <div className="cart-empty-state">
+          <EmptyState 
+            icon="🛒"
+            title="Cart is Empty"
+            message="Add some products to your cart to get started"
+          />
+        </div>
       ) : (
         <>
           <div className="cart-items">

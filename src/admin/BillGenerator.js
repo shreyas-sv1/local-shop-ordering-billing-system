@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Loader from '../components/Loader';
+import { useToast } from '../context/ToastContext';
 import './styles/BillGenerator.css';
 
 function BillGenerator({ orderId, onBillGenerated, onCancel }) {
@@ -7,6 +9,7 @@ function BillGenerator({ orderId, onBillGenerated, onCancel }) {
   const [error, setError] = useState('');
   const [calculatedTotal, setCalculatedTotal] = useState(0);
   const [generating, setGenerating] = useState(false);
+  const { success, error: showError } = useToast();
 
   useEffect(() => {
     fetchBillPreview();
@@ -76,13 +79,16 @@ function BillGenerator({ orderId, onBillGenerated, onCancel }) {
       const data = await response.json();
 
       if (data.success) {
-        alert(`✅ Bill generated successfully!\nBill ID: ${data.data.billId}\nFinal Amount: ₹${data.data.finalAmount}`);
+        success(`Bill generated successfully! Final Amount: ₹${data.data.finalAmount}`);
         onBillGenerated();
       } else {
         setError(data.message);
+        showError(data.message);
       }
     } catch (err) {
-      setError('Failed to generate bill: ' + err.message);
+      const errorMsg = 'Failed to generate bill: ' + err.message;
+      setError(errorMsg);
+      showError(errorMsg);
     } finally {
       setGenerating(false);
     }
@@ -92,7 +98,7 @@ function BillGenerator({ orderId, onBillGenerated, onCancel }) {
     return (
       <div className="bill-generator-modal">
         <div className="bill-generator-content">
-          <div className="loading">⏳ Loading bill items...</div>
+          <Loader size="large" message="Loading bill items..." />
         </div>
       </div>
     );
