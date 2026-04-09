@@ -323,7 +323,6 @@
 .btn-generate-bill:active {
   transform: scale(0.98);
 }
-}
 
 @media (max-width: 1200px) {
   .orders-layout {

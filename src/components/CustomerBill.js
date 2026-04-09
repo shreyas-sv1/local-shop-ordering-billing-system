@@ -116,14 +116,20 @@ function CustomerBill({ orderId, onClose }) {
               <span className="col-total">Total</span>
             </div>
 
-            {bill.items && bill.items.map((item, index) => (
-              <div key={index} className="item-row-bill">
-                <span className="col-name">{item.name}</span>
-                <span className="col-qty">{item.quantity}</span>
-                <span className="col-price">₹{item.price}</span>
-                <span className="col-total">₹{item.subtotal}</span>
+            {bill.items && bill.items.length > 0 ? (
+              bill.items.map((item, index) => (
+                <div key={index} className="item-row-bill">
+                  <span className="col-name">{item.name}</span>
+                  <span className="col-qty">{item.quantity}</span>
+                  <span className="col-price">₹{item.price}</span>
+                  <span className="col-total">₹{item.subtotal}</span>
+                </div>
+              ))
+            ) : (
+              <div className="item-row-bill">
+                <p>No items in this order</p>
               </div>
-            ))}
+            )}
 
             <div className="divider"></div>
           </div>
@@ -132,7 +138,7 @@ function CustomerBill({ orderId, onClose }) {
           <div className="bill-section total-section">
             <div className="total-row">
               <span className="label">Final Bill Amount:</span>
-              <span className="amount">₹{bill.finalAmount}</span>
+              <span className="amount">₹{bill?.finalAmount || bill?.final_amount || 0}</span>
             </div>
           </div>
 
