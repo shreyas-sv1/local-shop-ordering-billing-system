@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import html2pdf from 'html2pdf.js';
 import Loader from '../components/Loader';
 import { useToast } from '../context/ToastContext';
 import './styles/BillGenerator.css';
@@ -10,6 +11,7 @@ function BillGenerator({ orderId, onBillGenerated, onCancel }) {
   const [calculatedTotal, setCalculatedTotal] = useState(0);
   const [generating, setGenerating] = useState(false);
   const { success, error: showError } = useToast();
+  const billRef = useRef();
 
   useEffect(() => {
     fetchBillPreview();
@@ -80,6 +82,19 @@ function BillGenerator({ orderId, onBillGenerated, onCancel }) {
 
       if (data.success) {
         success(`Bill generated successfully! Final Amount: ₹${data.finalAmount}`);
+        
+        // Generate PDF using html2pdf
+        const element = billRef.current;
+        const opt = {
+          margin: 10,
+          filename: `Invoice-Order-${orderId}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        await html2pdf().set(opt).from(element).save();
+        
         onBillGenerated();
       } else {
         setError(data.message);
@@ -114,7 +129,7 @@ function BillGenerator({ orderId, onBillGenerated, onCancel }) {
 
         {error && <div className="error-message">❌ {error}</div>}
 
-        <div className="bill-items-section">
+        <div className="bill-items-section" ref={billRef}>
           <div className="bill-items-header">
             <span className="col-name">Product Name</span>
             <span className="col-qty">Quantity</span>
