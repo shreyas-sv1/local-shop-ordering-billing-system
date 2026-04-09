@@ -79,7 +79,7 @@ function BillGenerator({ orderId, onBillGenerated, onCancel }) {
       const data = await response.json();
 
       if (data.success) {
-        success(`Bill generated successfully! Final Amount: ₹${data.data.finalAmount}`);
+        success(`Bill generated successfully! Final Amount: ₹${data.finalAmount}`);
         onBillGenerated();
       } else {
         setError(data.message);
