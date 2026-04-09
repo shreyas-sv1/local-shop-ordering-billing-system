@@ -24,19 +24,19 @@ function Cart({ cartItems, onRemoveItem, onUpdateQuantity, onCheckout }) {
               <div className="cart-item" key={item.id}>
                 <div className="item-info">
                   <h4>{item.name}</h4>
-                  <p>₹{item.price} × {item.quantity} = ₹{item.price * item.quantity}</p>
+                  <p>₹{item.price} × {Number.isInteger(item.quantity) ? item.quantity : item.quantity.toFixed(3)} = ₹{(item.price * item.quantity).toFixed(2)}</p>
                 </div>
                 <div className="item-controls">
                   <button 
                     className="qty-btn"
-                    onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                    onClick={() => onUpdateQuantity(item.id, +(item.quantity - 1).toFixed(3))}
                   >
                     -
                   </button>
-                  <span className="qty-display">{item.quantity}</span>
+                  <span className="qty-display">{Number.isInteger(item.quantity) ? item.quantity : item.quantity.toFixed(3)}</span>
                   <button 
                     className="qty-btn"
-                    onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                    onClick={() => onUpdateQuantity(item.id, +(item.quantity + 1).toFixed(3))}
                   >
                     +
                   </button>
@@ -52,7 +52,7 @@ function Cart({ cartItems, onRemoveItem, onUpdateQuantity, onCheckout }) {
           </div>
           
           <div className="cart-summary">
-            <h3>Total: ₹{totalPrice}</h3>
+            <h3>Total: ₹{totalPrice.toFixed(2)}</h3>
             <button className="checkout-btn" onClick={onCheckout}>
               Proceed to Checkout
             </button>
