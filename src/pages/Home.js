@@ -4,7 +4,9 @@ import Cart from '../components/Cart';
 import ProductSearch from '../components/ProductSearch';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
+import Navbar from '../components/Navbar';
 import { useToast } from '../context/ToastContext';
+import { apiFetch } from '../utils/api';
 import '../styles/Home.css';
 
 function Home() {
@@ -17,26 +19,29 @@ function Home() {
 
   // Fetch products from backend
   useEffect(() => {
-    fetch('http://localhost:5000/api/products')
+    let isMounted = true;
+    apiFetch('/products')
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch products');
         return res.json();
       })
       .then(data => {
-        if (data.success) {
+        if (data.success && isMounted) {
           setProducts(data.data);
           setFilteredProducts(data.data);
           setLoading(false);
         }
       })
       .catch(err => {
+        if (!isMounted) return;
         console.error('Error fetching products:', err);
         const errorMsg = 'Failed to load products. Make sure backend is running on http://localhost:5000';
         setError(errorMsg);
         showError(errorMsg);
         setLoading(false);
       });
-  }, [showError]);
+      return () => { isMounted = false; };
+  }, []);
 
   const handleAddToCart = (product, quantityToAdd = 1) => {
     const existingItem = cartItems.find(item => item.id === product.id);
@@ -84,11 +89,8 @@ function Home() {
       };
 
       // Send order to backend
-      const response = await fetch('http://localhost:5000/api/orders', {
+      const response = await apiFetch('/orders', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify(orderData)
       });
 
@@ -126,51 +128,56 @@ function Home() {
   const totalCartItems = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <div className="home-container">
-      <div className="products-section">
-        <h2>Our Products</h2>
-        
-        {loading ? (
-          <Loader size="large" message="Loading products from backend..." />
-        ) : error ? (
-          <div className="error-message">{error}</div>
-        ) : (
-          <>
-            <ProductSearch 
-              products={products}
-              onFilteredProducts={setFilteredProducts}
-            />
+    <>
+      <Navbar cartItemCount={totalCartItems} />
+      <main className="main-content">
+        <div className="home-container">
+          <div className="products-section">
+            <h2>Our Products</h2>
             
-            {filteredProducts.length > 0 ? (
-              <div className="products-grid">
-                {filteredProducts.map(product => (
-                  <ProductCard 
-                    key={product.id} 
-                    product={product}
-                    onAddToCart={handleAddToCart}
-                  />
-                ))}
-              </div>
+            {loading ? (
+              <Loader size="large" message="Loading products from backend..." />
+            ) : error ? (
+              <div className="error-message">{error}</div>
             ) : (
-              <EmptyState 
-                icon="🔍"
-                title="No Products Found"
-                message="Try adjusting your search or filters"
-              />
+              <>
+                <ProductSearch 
+                  products={products}
+                  onFilteredProducts={setFilteredProducts}
+                />
+                
+                {filteredProducts.length > 0 ? (
+                  <div className="products-grid">
+                    {filteredProducts.map(product => (
+                      <ProductCard 
+                        key={product.id} 
+                        product={product}
+                        onAddToCart={handleAddToCart}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState 
+                    icon="🔍"
+                    title="No products found"
+                    message="Try adjusting your search criteria"
+                  />
+                )}
+              </>
             )}
-          </>
-        )}
-      </div>
-
-      <aside className="cart-sidebar">
-        <Cart 
-          cartItems={cartItems}
-          onRemoveItem={handleRemoveItem}
-          onUpdateQuantity={handleUpdateQuantity}
-          onCheckout={handleCheckout}
-        />
-      </aside>
-    </div>
+          </div>
+          
+          <div className="cart-sidebar">
+            <Cart 
+              cartItems={cartItems} 
+              onRemoveItem={handleRemoveItem}
+              onUpdateQuantity={handleUpdateQuantity}
+              onCheckout={handleCheckout}
+            />
+          </div>
+        </div>
+      </main>
+    </>
   );
 }
 

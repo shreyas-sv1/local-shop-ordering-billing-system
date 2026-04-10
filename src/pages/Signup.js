@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { apiFetch } from '../utils/api';
 import '../styles/Auth.css';
 
 function Signup() {
@@ -30,9 +31,8 @@ function Signup() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/signup', {
+      const response = await apiFetch('/auth/signup', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password })
       });
 
@@ -121,7 +121,7 @@ function Signup() {
         </form>
 
         <div className="auth-footer">
-          <p>Already have an account? <a href="/login">Login here</a></p>
+          <p>Already have an account? <Link to="/login">Login here</Link></p>
         </div>
       </div>
     </div>

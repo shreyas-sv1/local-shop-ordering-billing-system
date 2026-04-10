@@ -150,6 +150,24 @@
   font-weight: 600;
 }
 
+.bill-meta-info {
+  display: flex;
+  justify-content: space-between;
+}
+
+.bill-meta-info .info-box {
+  flex: 1;
+}
+
+.bill-meta-info .info-box.right-align {
+  text-align: right;
+}
+
+.bill-meta-info .info-box.right-align .section-row {
+  justify-content: flex-end;
+  gap: 15px;
+}
+
 .items-section {
   padding: 0;
   background: transparent;

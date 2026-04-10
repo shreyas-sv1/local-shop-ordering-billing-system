@@ -3,7 +3,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("FATAL: JWT_SECRET environment variable is missing.");
+}
 
 // User Signup
 exports.signup = async (req, res) => {
@@ -30,6 +33,9 @@ exports.signup = async (req, res) => {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Automatically set role to customer
+    const userRole = 'customer';
 
     // Create user
     const insertQuery = 'INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)';
@@ -37,14 +43,14 @@ exports.signup = async (req, res) => {
       email,
       hashedPassword,
       name,
-      'customer'
+      userRole
     ]);
 
     const userId = result.insertId;
 
     // Generate JWT
     const token = jwt.sign(
-      { id: userId, email, role: 'customer' },
+      { id: userId, email, role: userRole },
       JWT_SECRET,
       { expiresIn: '30d' }
     );

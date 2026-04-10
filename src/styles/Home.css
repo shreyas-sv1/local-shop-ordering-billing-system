@@ -81,6 +81,7 @@
   .cart-sidebar {
     position: static;
     order: -1;
+    width: auto;
   }
 }
 

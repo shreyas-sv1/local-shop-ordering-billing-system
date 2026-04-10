@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CustomerBill from '../components/CustomerBill';
 import Loader from '../components/Loader';
 import EmptyState from '../components/EmptyState';
+import { apiFetch } from '../utils/api';
 import '../styles/OrderHistory.css';
 
 function OrderHistory() {
@@ -10,6 +12,7 @@ function OrderHistory() {
   const [error, setError] = useState('');
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [showBill, setShowBill] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCustomerOrders();
@@ -17,7 +20,7 @@ function OrderHistory() {
 
   const fetchCustomerOrders = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/orders');
+      const response = await apiFetch('/orders');
       const data = await response.json();
 
       if (data.success) {
@@ -92,7 +95,7 @@ function OrderHistory() {
           title="No Orders Yet"
           message="You haven't placed any orders yet. Start shopping now!"
           actionText="Continue Shopping"
-          onAction={() => window.location.href = '/'}
+          onAction={() => navigate('/')}
         />
       ) : (
         <div className="orders-grid-customer">

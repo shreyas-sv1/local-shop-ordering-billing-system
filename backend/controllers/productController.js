@@ -55,7 +55,7 @@ exports.getProductById = async (req, res) => {
 // Add new product (admin only - future)
 exports.addProduct = async (req, res) => {
   try {
-    const { name, price } = req.body;
+    const { name, price, category = 'General' } = req.body;
     
     if (!name || !price) {
       return res.status(400).json({
@@ -65,7 +65,7 @@ exports.addProduct = async (req, res) => {
     }
     
     const connection = await pool.getConnection();
-    const result = await connection.query('INSERT INTO products (name, price) VALUES (?, ?)', [name, price]);
+    const result = await connection.query('INSERT INTO products (name, price, category) VALUES (?, ?, ?)', [name, price, category]);
     connection.release();
     
     res.status(201).json({
@@ -87,7 +87,7 @@ exports.addProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, price } = req.body;
+    const { name, price, category = 'General' } = req.body;
 
     if (!name || !price) {
       return res.status(400).json({
@@ -110,8 +110,8 @@ exports.updateProduct = async (req, res) => {
 
     // Update product
     await connection.query(
-      'UPDATE products SET name = ?, price = ? WHERE id = ?',
-      [name, price, id]
+      'UPDATE products SET name = ?, price = ?, category = ? WHERE id = ?',
+      [name, price, category, id]
     );
 
     connection.release();

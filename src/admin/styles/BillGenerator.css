@@ -313,3 +313,19 @@
     flex: 1;
   }
 }
+
+.print-only, .print-only-inline { display: none; }
+
+.printing .print-only { display: block; }
+
+.printing .print-only-inline { display: inline-block; }
+
+.printing .hide-print { display: none; }
+
+.printing .bill-meta-info { padding: 15px 0; display: flex; justify-content: space-between; }
+
+.printing .shop-title { text-align: center; margin-bottom: 10px; font-size: 24px; font-weight: bold; color: #333; }
+
+.printing { padding: 40px; background: white; }
+
+.printing .bill-items-section { margin-top: 20px; }

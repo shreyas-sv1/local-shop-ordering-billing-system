@@ -2,7 +2,7 @@ import React from 'react';
 import EmptyState from './EmptyState';
 import '../styles/Cart.css';
 
-function Cart({ cartItems, onRemoveItem, onUpdateQuantity, onCheckout }) {
+function Cart({ cartItems = [], onRemoveItem, onUpdateQuantity, onCheckout }) {
   const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
 
   return (

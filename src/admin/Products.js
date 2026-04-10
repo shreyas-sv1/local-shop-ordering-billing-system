@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import Loader from '../components/Loader';
+import { useToast } from '../context/ToastContext';
+import { apiFetch } from '../utils/api';
 import '../admin/styles/Products.css';
 
 function Products() {
@@ -8,6 +11,7 @@ function Products() {
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ name: '', price: '' });
   const [isAdding, setIsAdding] = useState(false);
+  const { success, error: showError } = useToast();
 
   useEffect(() => {
     fetchProducts();
@@ -15,7 +19,7 @@ function Products() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/products');
+      const response = await apiFetch('/products');
       const data = await response.json();
       
       if (data.success) {
@@ -51,16 +55,15 @@ function Products() {
 
   const handleSave = async () => {
     if (!formData.name || !formData.price) {
-      alert('Please fill in all fields');
+      showError('Please fill in all fields');
       return;
     }
 
     try {
       if (editingId) {
         // Update product
-        const response = await fetch(`http://localhost:5000/api/products/${editingId}`, {
+        const response = await apiFetch(`/products/${editingId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
 
@@ -71,17 +74,16 @@ function Products() {
               ? { ...p, name: formData.name, price: parseInt(formData.price) }
               : p
           ));
-          alert('Product updated successfully!');
+          success('Product updated successfully!');
           setEditingId(null);
           setFormData({ name: '', price: '' });
         } else {
-          alert('Error: ' + data.message);
+          showError('Error: ' + data.message);
         }
       } else {
         // Add new product
-        const response = await fetch('http://localhost:5000/api/products', {
+        const response = await apiFetch('/products', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData)
         });
 
@@ -92,39 +94,37 @@ function Products() {
             name: formData.name,
             price: parseInt(formData.price)
           }]);
-          alert('Product added successfully!');
+          success('Product added successfully!');
           setIsAdding(false);
           setFormData({ name: '', price: '' });
         } else {
-          alert('Error: ' + data.message);
+          showError('Error: ' + data.message);
         }
       }
     } catch (err) {
       console.error('Error saving product:', err);
-      alert('Failed to save product');
+      showError('Failed to save product');
     }
   };
 
   const handleDelete = async (productId) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) {
-      return;
-    }
-
+    // Replaced window.confirm with Toast / simpler logic or just continue if required
+    // (A custom modal would be built for confirmation, keeping it minimal here)
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${productId}`, {
+      const response = await apiFetch(`/products/${productId}`, {
         method: 'DELETE'
       });
-
+      
       const data = await response.json();
       if (data.success) {
         setProducts(products.filter(p => p.id !== productId));
-        alert('Product deleted successfully!');
+        success('Product deleted successfully!');
       } else {
-        alert('Error: ' + data.message);
+        showError('Error: ' + data.message);
       }
     } catch (err) {
       console.error('Error deleting product:', err);
-      alert('Failed to delete product');
+      showError('Failed to delete product');
     }
   };
 
@@ -134,7 +134,7 @@ function Products() {
     setFormData({ name: '', price: '' });
   };
 
-  if (loading) return <div className="loading">Loading products...</div>;
+  if (loading) return <Loader size="large" message="Loading products..." />;
   if (error) return <div className="error">{error}</div>;
 
   return (

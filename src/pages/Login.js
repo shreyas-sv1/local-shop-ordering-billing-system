@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { apiFetch } from '../utils/api';
 import '../styles/Auth.css';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loginRole, setLoginRole] = useState('customer'); // 'customer' or 'admin'
   const navigate = useNavigate();
   const { login } = useAuth();
   const { success, error: showError } = useToast();
@@ -17,7 +19,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await apiFetch('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -26,9 +28,24 @@ function Login() {
       const data = await response.json();
 
       if (data.success) {
+        const userRole = data.data.role || 'customer';
+        
+        if (loginRole === 'admin' && userRole !== 'admin') {
+          showError('Access denied. You are not an admin.');
+          setLoading(false);
+          return;
+        }
+
         login(data.data);
         success('Login successful! Redirecting...');
-        setTimeout(() => navigate('/'), 1500);
+        
+        setTimeout(() => {
+          if (userRole === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/');
+          }
+        }, 1500);
       } else {
         showError(data.message);
       }
@@ -40,11 +57,28 @@ function Login() {
   };
 
   return (
-    <div className="auth-container">
+    <div className={`auth-container theme-${loginRole}`}>
       <div className="auth-form-wrapper">
+        <div className="role-toggle-container">
+          <button 
+            type="button" 
+            className={`role-toggle-btn ${loginRole === 'customer' ? 'active' : ''}`}
+            onClick={() => setLoginRole('customer')}
+          >
+            🛒 Customer Sign In
+          </button>
+          <button 
+            type="button" 
+            className={`role-toggle-btn admin-btn ${loginRole === 'admin' ? 'active' : ''}`}
+            onClick={() => setLoginRole('admin')}
+          >
+            🛡️ Admin Portal
+          </button>
+        </div>
+
         <div className="auth-header">
-          <h1>🔐 Login</h1>
-          <p>Welcome back to Local Shop</p>
+          <h1>{loginRole === 'admin' ? '🛡️ Admin Login' : '🔐 Customer Login'}</h1>
+          <p>{loginRole === 'admin' ? 'Access the store management dashboard' : 'Welcome back to Local Shop'}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -58,6 +92,7 @@ function Login() {
               placeholder="your@email.com"
               required
               disabled={loading}
+              className={loginRole === 'admin' ? 'admin-input' : ''}
             />
           </div>
 
@@ -71,17 +106,20 @@ function Login() {
               placeholder="••••••••"
               required
               disabled={loading}
+              className={loginRole === 'admin' ? 'admin-input' : ''}
             />
           </div>
 
-          <button type="submit" className="auth-btn" disabled={loading}>
+          <button type="submit" className={`auth-btn ${loginRole === 'admin' ? 'admin-submit-btn' : ''}`} disabled={loading}>
             {loading ? '⏳ Logging in...' : '✓ Login'}
           </button>
         </form>
 
-        <div className="auth-footer">
-          <p>Don't have an account? <a href="/signup">Sign up here</a></p>
-        </div>
+        {loginRole === 'customer' && (
+          <div className="auth-footer">
+            <p>Don't have an account? <Link to="/signup">Sign up here</Link></p>
+          </div>
+        )}
       </div>
     </div>
   );

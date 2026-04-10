@@ -15,10 +15,13 @@ exports.createOrder = async (req, res) => {
       });
     }
     
+    const userId = req.user.id;
+
     // Start transaction
     await connection.beginTransaction();
     
     let totalAmount = 0;
+    const itemPrices = new Map();
     
     // Validate all products exist and calculate total
     for (const item of items) {
@@ -36,27 +39,23 @@ exports.createOrder = async (req, res) => {
         });
       }
       
+      itemPrices.set(item.product_id, products[0].price);
       totalAmount += products[0].price * item.quantity;
     }
     
     // Insert order
     const [orderResult] = await connection.query(
-      'INSERT INTO orders (total_amount, status) VALUES (?, ?)',
-      [totalAmount, 'pending']
+      'INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, ?)',
+      [userId, totalAmount, 'pending']
     );
     
     const orderId = orderResult.insertId;
     
     // Insert order items
     for (const item of items) {
-      const [products] = await connection.query(
-        'SELECT price FROM products WHERE id = ?',
-        [item.product_id]
-      );
-      
       await connection.query(
         'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
-        [orderId, item.product_id, item.quantity, products[0].price]
+        [orderId, item.product_id, item.quantity, itemPrices.get(item.product_id)]
       );
     }
     
@@ -86,11 +85,19 @@ exports.createOrder = async (req, res) => {
 // Get all orders
 exports.getAllOrders = async (req, res) => {
   try {
-    const connection = await pool.getConnection();
-    const [orders] = await connection.query(
-      'SELECT o.id, o.total_amount, o.status, o.created_at FROM orders o ORDER BY o.created_at DESC'
-    );
-    connection.release();
+    let orders;
+    if (req.user && req.user.role === 'admin') {
+      const [allOrders] = await pool.query(
+        'SELECT o.id, o.user_id, o.total_amount, o.status, o.created_at FROM orders o ORDER BY o.created_at DESC'
+      );
+      orders = allOrders;
+    } else {
+      const [userOrders] = await pool.query(
+        'SELECT o.id, o.user_id, o.total_amount, o.status, o.created_at FROM orders o WHERE o.user_id = ? ORDER BY o.created_at DESC',
+        [req.user.id]
+      );
+      orders = userOrders;
+    }
     
     res.status(200).json({
       success: true,
@@ -111,16 +118,14 @@ exports.getAllOrders = async (req, res) => {
 exports.getOrderById = async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await pool.getConnection();
     
     // Get order details
-    const [orders] = await connection.query(
+    const [orders] = await pool.query(
       'SELECT id, total_amount, status, created_at FROM orders WHERE id = ?',
       [id]
     );
     
     if (orders.length === 0) {
-      connection.release();
       return res.status(404).json({
         success: false,
         message: 'Order not found'
@@ -128,16 +133,14 @@ exports.getOrderById = async (req, res) => {
     }
     
     // Get order items
-    const [items] = await connection.query(
+    const [items] = await pool.query(
       `SELECT oi.product_id, p.name, oi.quantity, oi.price 
        FROM order_items oi 
        JOIN products p ON oi.product_id = p.id 
        WHERE oi.order_id = ?`,
       [id]
     );
-    
-    connection.release();
-    
+
     res.status(200).json({
       success: true,
       data: {
@@ -159,9 +162,7 @@ exports.getOrderById = async (req, res) => {
 // Get orders count (for admin dashboard)
 exports.getOrdersCount = async (req, res) => {
   try {
-    const connection = await pool.getConnection();
-    const [result] = await connection.query('SELECT COUNT(*) as count FROM orders');
-    connection.release();
+    const [result] = await pool.query('SELECT COUNT(*) as count FROM orders');
     
     res.status(200).json({
       success: true,
@@ -194,12 +195,9 @@ exports.updateOrderStatus = async (req, res) => {
       });
     }
 
-    const connection = await pool.getConnection();
-    
     // Check if order exists
-    const [orders] = await connection.query('SELECT id FROM orders WHERE id = ?', [id]);
+    const [orders] = await pool.query('SELECT id FROM orders WHERE id = ?', [id]);
     if (orders.length === 0) {
-      connection.release();
       return res.status(404).json({
         success: false,
         message: 'Order not found'
@@ -207,13 +205,11 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     // Update status
-    await connection.query(
+    await pool.query(
       'UPDATE orders SET status = ? WHERE id = ?',
       [status.toLowerCase(), id]
     );
     
-    connection.release();
-
     res.status(200).json({
       success: true,
       message: 'Order status updated successfully',
@@ -233,22 +229,18 @@ exports.updateOrderStatus = async (req, res) => {
 // Get orders stats (for dashboard)
 exports.getOrdersStats = async (req, res) => {
   try {
-    const connection = await pool.getConnection();
-    
     // Total orders
-    const [totalResult] = await connection.query('SELECT COUNT(*) as count FROM orders');
+    const [totalResult] = await pool.query('SELECT COUNT(*) as count FROM orders');
     
     // Orders by status
-    const [statusResult] = await connection.query(
+    const [statusResult] = await pool.query(
       `SELECT status, COUNT(*) as count FROM orders GROUP BY status`
     );
     
     // Total revenue
-    const [revenueResult] = await connection.query(
+    const [revenueResult] = await pool.query(
       'SELECT SUM(total_amount) as totalRevenue FROM orders'
     );
-
-    connection.release();
 
     const stats = {
       totalOrders: totalResult[0].count,

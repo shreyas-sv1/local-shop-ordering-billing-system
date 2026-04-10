@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { apiFetch } from '../utils/api';
 import '../admin/styles/Dashboard.css';
 
 function Dashboard() {
@@ -12,7 +13,7 @@ function Dashboard() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/orders/stats/all');
+      const response = await apiFetch('/orders/stats/all');
       const data = await response.json();
       
       if (data.success) {

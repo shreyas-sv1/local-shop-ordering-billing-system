@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import html2pdf from 'html2pdf.js';
+import { apiFetch } from '../utils/api';
 import './styles/CustomerBill.css';
 
 function CustomerBill({ orderId, onClose }) {
@@ -15,7 +16,7 @@ function CustomerBill({ orderId, onClose }) {
   const fetchBill = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/orders/${orderId}/bill`);
+      const response = await apiFetch(`/orders/${orderId}/bill`);
       const data = await response.json();
 
       if (data.success) {
@@ -90,18 +91,26 @@ function CustomerBill({ orderId, onClose }) {
           </div>
 
           {/* Order Details Section */}
-          <div className="bill-section">
-            <div className="section-row">
-              <span className="label">Order ID:</span>
-              <span className="value">#{bill.orderId}</span>
+          <div className="bill-section bill-meta-info">
+            <div className="info-box">
+              <div className="section-row">
+                <span className="label">Order ID:</span>
+                <span className="value">#{bill.orderId}</span>
+              </div>
+              <div className="section-row">
+                <span className="label">Bill ID:</span>
+                <span className="value">#{bill.billId}</span>
+              </div>
             </div>
-            <div className="section-row">
-              <span className="label">Bill ID:</span>
-              <span className="value">#{bill.billId}</span>
-            </div>
-            <div className="section-row">
-              <span className="label">Date:</span>
-              <span className="value">{new Date(bill.createdAt).toLocaleString()}</span>
+            <div className="info-box right-align">
+              <div className="section-row">
+                <span className="label">Date:</span>
+                <span className="value">{new Date(bill.createdAt).toLocaleDateString()}</span>
+              </div>
+              <div className="section-row">
+                <span className="label">Time:</span>
+                <span className="value">{new Date(bill.createdAt).toLocaleTimeString()}</span>
+              </div>
             </div>
           </div>
 
@@ -136,9 +145,14 @@ function CustomerBill({ orderId, onClose }) {
 
           {/* Total Section */}
           <div className="bill-section total-section">
-            <div className="total-row">
+            <div className="total-row subtotal">
+              <span className="label">Total Items:</span>
+              <span className="amount">{bill.items ? bill.items.length : 0}</span>
+            </div>
+            <div className="divider"></div>
+            <div className="total-row final-total">
               <span className="label">Final Bill Amount:</span>
-              <span className="amount">₹{bill?.finalAmount || bill?.final_amount || 0}</span>
+              <span className="amount">₹{parseFloat(bill?.finalAmount || bill?.final_amount || 0).toFixed(2)}</span>
             </div>
           </div>
 

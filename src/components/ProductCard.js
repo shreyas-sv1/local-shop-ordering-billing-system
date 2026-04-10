@@ -24,64 +24,52 @@ const getCategoryEmoji = (name) => {
 
 function ProductCard({ product, onAddToCart }) {
   const [quantity, setQuantity] = useState(1);
-  const [price, setPrice] = useState(product.price);
 
   const handleQuantityChange = (e) => {
     let val = parseFloat(e.target.value);
     if (isNaN(val) || val < 0) val = 0;
     setQuantity(val);
-    setPrice(+(val * product.price).toFixed(2));
-  };
-
-  const handlePriceChange = (e) => {
-    let val = parseFloat(e.target.value);
-    if (isNaN(val) || val < 0) val = 0;
-    setPrice(val);
-    setQuantity(+(val / product.price).toFixed(3));
   };
 
   const handleAddClick = () => {
     if (quantity > 0) {
       onAddToCart(product, quantity);
       setQuantity(1);
-      setPrice(product.price);
     }
   };
+
+  const getUnitString = (name) => {
+    const lower = name.toLowerCase();
+    if (lower.includes('(1kg)') || lower.includes('(500g)') || lower.includes('kg') || lower.includes('gram')) return '';
+    if (lower.includes('(1l)') || lower.includes('(500ml)') || lower.includes('litre') || lower.includes('ml')) return '';
+    if (lower.includes('(1 piece)') || lower.includes('piece')) return '';
+    return '';
+  };
+  
+  const unitStr = getUnitString(product.name);
 
   return (
     <div className="product-card">
       <div className="product-image">{getCategoryEmoji(product.name)}</div>
       <h3 className="product-name">{product.name}</h3>
-      <p className="product-price">₹{product.price} <span className="unit-label">/ unit</span></p>
+      <p className="product-price">₹{product.price} {unitStr && <span className="unit-label">{unitStr}</span>}</p>
       
       <div className="purchase-controls">
         <div className="input-group">
           <label>Qty:</label>
           <input 
             type="number" 
-            step="0.05" 
+            step="1" 
             min="0" 
             value={quantity || ''} 
             onChange={handleQuantityChange} 
             className="card-input qty-input"
           />
         </div>
-        <span className="divider">=</span>
-        <div className="input-group">
-          <label>₹:</label>
-          <input 
-            type="number" 
-            step="1" 
-            min="0" 
-            value={price || ''} 
-            onChange={handlePriceChange} 
-            className="card-input price-input"
-          />
-        </div>
       </div>
 
       <button className="add-to-cart-btn" onClick={handleAddClick}>
-        Add to Cart (₹{price})
+        Add to Cart (₹{(quantity * product.price).toFixed(2)})
       </button>
     </div>
   );

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import BillGenerator from './BillGenerator';
 import Loader from '../components/Loader';
 import { useToast } from '../context/ToastContext';
+import { apiFetch } from '../utils/api';
 import '../admin/styles/Orders.css';
 
 function Orders() {
@@ -19,7 +20,7 @@ function Orders() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/orders');
+      const response = await apiFetch('/orders');
       const data = await response.json();
       
       if (data.success) {
@@ -36,12 +37,10 @@ function Orders() {
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
       setUpdatingOrderId(orderId);
-      const response = await fetch(`http://localhost:5000/api/orders/${orderId}/status`, {
+      const response = await apiFetch(`/orders/${orderId}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
       });
-
       const data = await response.json();
       
       if (data.success) {
@@ -63,7 +62,7 @@ function Orders() {
 
   const fetchOrderDetails = async (orderId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/orders/${orderId}`);
+      const response = await apiFetch(`/orders/${orderId}`);
       const data = await response.json();
       
       if (data.success) {
